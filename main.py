@@ -1,0 +1,67 @@
+from datetime import datetime, timezone
+from dotenv import load_dotenv
+from fake_useragent import UserAgent
+import csv
+import requests
+import os
+
+
+def check_earthquakes(magnitude: int = 5):
+    """
+    :param magnitude: float representing the earthquake intensity
+    :return: list[dict] if there are earthquakes greater than magnitude. False otherwise.
+    """
+    # Make sure we use a proper User-Agent so we won't get flagged as a scraper or bot
+    ua = UserAgent()
+
+    # Make the requests
+    usgs = requests.get(
+        "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.csv",
+        headers = {"User-Agent": ua.chrome},
+        timeout = (3, 5)
+    )
+
+    # Check the result
+    if usgs:
+        # Convert to CSV to list of dict
+        usgs_csv = csv.DictReader(usgs.text.splitlines())
+
+        # Filter only earthquake data that has a magnitude greater than 'magnitude'
+        values = [l for l in usgs_csv if l["type"] == "earthquake" and float(l["mag"]) > magnitude]
+
+    # Return result
+    return values if values else False
+
+
+def is_within_timeframe(date_str, seconds: int = 60):
+    """
+    :param date_str: A string representing the date in ISO 8601 format (e.g., "2024-11-24T07:58:36.396Z").
+    :param seconds: The number of seconds to compare the date against.
+    :return: True if the given date is within the specified seconds from the current date, False otherwise.
+    """
+    try:
+        # Parse the input date string into a datetime object
+        input_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        
+        # Get the current UTC date and time
+        current_date = datetime.now(timezone.utc)
+        
+        # Calculate the difference in seconds
+        time_difference = abs((current_date - input_date).total_seconds())
+        
+        # Check if the difference is within the specified seconds
+        return time_difference <= seconds
+    except ValueError as e:
+        print(f"Invalid date format: {e}")
+        return False
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    MAG: float = float(os.getenv("MAG", 5))
+    earthquakes = check_earthquakes(MAG)
+    if earthquakes:
+        for earthquake in earthquakes:
+            if is_within_timeframe(earthquake["time"], 60):
+                # Post to Bluesky
+                pass
