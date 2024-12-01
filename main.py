@@ -1,5 +1,4 @@
 from atproto import Client
-from datetime import datetime, timezone
 from dotenv import load_dotenv
 from fake_useragent import UserAgent
 import arrow
@@ -42,18 +41,18 @@ def is_within_timeframe(date_str, seconds: int = 60):
     :return: True if the given date is within the specified seconds from the current date, False otherwise.
     """
     try:
-        # Parse the input date string into a datetime object
-        input_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        # Parse the input date string using arrow
+        input_date = arrow.get(date_str)
         
-        # Get the current UTC date and time
-        current_date = datetime.now(timezone.utc)
+        # Get the current UTC date and time using arrow
+        current_date = arrow.utcnow()
         
         # Calculate the difference in seconds
         time_difference = abs((current_date - input_date).total_seconds())
         
         # Check if the difference is within the specified seconds
         return time_difference <= seconds
-    except ValueError as e:
+    except arrow.parser.ParserError as e:
         print(f"Invalid date format: {e}")
         return False
 
@@ -63,6 +62,8 @@ if __name__ == "__main__":
     MAG: float = float(os.getenv("MAG", 5))
     BSKYUSER: str = os.getenv("BSKYUSER", "")
     BSKYPASS: str = os.getenv("BSKYPASS", "")
+    DEBUG: bool = os.getenv("DEBUG", "F")[0] in ["T", "t"]
+    TIMEFRAME: int = int(os.getenv("TIMEFRAME", 60))
     if not BSKYUSER or not BSKYPASS:
        raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
     earthquakes = check_earthquakes(MAG)
@@ -72,7 +73,7 @@ if __name__ == "__main__":
         with open("tremors.txt", "a") as f:
             for earthquake in earthquakes:
                 lines = ""
-                if is_within_timeframe(earthquake["time"], 60):
+                if is_within_timeframe(earthquake["time"], TIMEFRAME):
                     # Make readable
                     date_utc = arrow.get(earthquake["time"])
                     date_local = date_utc.humanize()
@@ -82,5 +83,8 @@ if __name__ == "__main__":
                     print(lines)
                     f.write(lines)
                     # Post to Bluesky
-                    post = client.send_post(text=lines)
-                    print(f"CID: {post.cid} URI: {post.uri}")
+                    if not DEBUG:
+                        post = client.send_post(text=lines)
+                        print(f"CID: {post.cid} URI: {post.uri}")
+                else:
+                    print(f"SKIP: Magnitude {earthquake['mag']} {earthquake['place']} on {earthquake['time']}")
