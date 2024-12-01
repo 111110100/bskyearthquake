@@ -1,3 +1,4 @@
+from atproto import Client
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from fake_useragent import UserAgent
@@ -66,6 +67,8 @@ if __name__ == "__main__":
        raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
     earthquakes = check_earthquakes(MAG)
     if earthquakes:
+        client = Client()
+        client.login(BSKYUSER, BSKYPASS)
         for earthquake in earthquakes:
             lines = ""
             if is_within_timeframe(earthquake["time"], 60):
@@ -77,4 +80,5 @@ if __name__ == "__main__":
                 lines += f"Map: https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}\n"
                 print(lines)
                 # Post to Bluesky
-                
+                post = client.send_post(text=lines)
+                print(f"CID: {post.cid} URI: {post.uri}")
