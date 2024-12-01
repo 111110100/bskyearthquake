@@ -1,5 +1,7 @@
 # Bluesky Earthquake Autoposting BOT
-Automatically post earthquakes with magnitude 5 and above on Bluesky. Latitude and longitude posted and linked to Google Maps.
+Automatically post earthquakes with magnitude 4.5 and above on Bluesky. Latitude and longitude posted and linked to Google Maps.
+## See it in action
+[Tremors BOT](https://bsky.app/profile/tremorsbot.bsky.social)
 ## Requirements
 - atproto
 - datetime
