@@ -69,7 +69,7 @@ if __name__ == "__main__":
     if earthquakes:
         client = Client()
         client.login(BSKYUSER, BSKYPASS)
-        with open("tremores.txt", "a") as f:
+        with open("tremors.txt", "a") as f:
             for earthquake in earthquakes:
                 lines = ""
                 if is_within_timeframe(earthquake["time"], 60):
