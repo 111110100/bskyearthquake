@@ -69,16 +69,18 @@ if __name__ == "__main__":
     if earthquakes:
         client = Client()
         client.login(BSKYUSER, BSKYPASS)
-        for earthquake in earthquakes:
-            lines = ""
-            if is_within_timeframe(earthquake["time"], 60):
-                # Make readable
-                date_utc = arrow.get(earthquake["time"])
-                date_local = date_utc.humanize()
-                date_utc = date_utc.format("MMMM DD, YYYY HH:MM")
-                lines += f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
-                lines += f"Map: https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}\n"
-                print(lines)
-                # Post to Bluesky
-                post = client.send_post(text=lines)
-                print(f"CID: {post.cid} URI: {post.uri}")
+        with open("tremores.txt", "a") as f:
+            for earthquake in earthquakes:
+                lines = ""
+                if is_within_timeframe(earthquake["time"], 60):
+                    # Make readable
+                    date_utc = arrow.get(earthquake["time"])
+                    date_local = date_utc.humanize()
+                    date_utc = date_utc.format("MMMM DD, YYYY HH:MM")
+                    lines += f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
+                    lines += f"Map: https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}\n"
+                    print(lines)
+                    f.write(lines)
+                    # Post to Bluesky
+                    post = client.send_post(text=lines)
+                    print(f"CID: {post.cid} URI: {post.uri}")
