@@ -42,7 +42,7 @@ def is_within_timeframe(date_str, seconds: int = 60):
     """
     try:
         # Parse the input date string using arrow
-        input_date = arrow.get(date_str)
+        input_date = arrow.get(date_str).to("utc")
         
         # Get the current UTC date and time using arrow
         current_date = arrow.utcnow()
@@ -59,7 +59,7 @@ def is_within_timeframe(date_str, seconds: int = 60):
 
 if __name__ == "__main__":
     load_dotenv()
-    MAG: float = float(os.getenv("MAG", 5))
+    MAG: float = float(os.getenv("MAG", 4))
     BSKYUSER: str = os.getenv("BSKYUSER", "")
     BSKYPASS: str = os.getenv("BSKYPASS", "")
     DEBUG: bool = os.getenv("DEBUG", "F")[0] in ["T", "t"]
@@ -87,4 +87,4 @@ if __name__ == "__main__":
                         post = client.send_post(text=lines)
                         print(f"CID: {post.cid} URI: {post.uri}")
                 else:
-                    print(f"SKIP: Magnitude {earthquake['mag']} {earthquake['place']} on {earthquake['time']}")
+                    print(f"SKIP: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
