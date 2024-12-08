@@ -1,4 +1,4 @@
-from atproto import Client
+from atproto import Client, TextBuilder
 from dotenv import load_dotenv
 from fake_useragent import UserAgent
 import arrow
@@ -100,7 +100,8 @@ if __name__ == "__main__":
             bluesky_writer = csv.writer(posted_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for earthquake in earthquakes:
 
-                lines = ""
+                bluesky_line = ""
+                bluesky_link = ""
                 if is_within_timeframe(earthquake["time"], TIMEFRAME):
                     print("We got data for posting...")
 
@@ -110,9 +111,10 @@ if __name__ == "__main__":
                         date_utc = arrow.get(earthquake["time"])
                         date_local = date_utc.humanize()
                         date_utc = date_utc.format("MMMM DD, YYYY HH:MM")
-                        lines += f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
-                        lines += f"Map: https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}\n"
-                        print(lines)
+                        bluesky_line = f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}"
+                        bluesky_link = f"https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}"
+                        print(bluesky_line)
+                        print(bluesky_link)
 
                         # save
                         print("Writing to bluesky csv...")
@@ -128,11 +130,14 @@ if __name__ == "__main__":
 
                         if not DEBUG:
                             print("Posting to bluesky...")
-                            post = client.send_post(text=lines)
+                            tb = TextBuilder()
+                            tb.text(bluesky_line)
+                            tb.link("View map", bluesky_link)
+                            post = client.send_post(tb)
                             print(f"CID: {post.cid} URI: {post.uri}")
                     else:
                         print(f"SKIP POST: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
                 else:
-                    print(f"SKIP MAG: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
+                    print(f"SKIP TIME: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
     else:
         print(f"No earthquakes with magnitude {MAG}")
