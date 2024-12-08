@@ -64,32 +64,48 @@ if __name__ == "__main__":
     BSKYPASS: str = os.getenv("BSKYPASS", "")
     DEBUG: bool = os.getenv("DEBUG", "F")[0] in ["T", "t"]
     TIMEFRAME: int = int(os.getenv("TIMEFRAME", 60))
+
     if DEBUG:
         print(f"MAG: {MAG}")
         print(f"BSKYUSER: {BSKYUSER}")
         print(f"BSKYPASS: {BSKYPASS}")
         print(f"TIMEFRAME: {TIMEFRAME}")
+
     if not BSKYUSER or not BSKYPASS:
        raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
+
+    print("Fetching earthquake information from USGS...")
     earthquakes = check_earthquakes(MAG)
     if earthquakes:
+        print("We got earthquakes...")
         bluesky_logged_in = False
+
         # Check for existing posted_to_bluesky file
+        print("Checking for previously saved data posted on bluesky...")
         if not os.path.isfile("posted_to_bluesky.csv"):
             with open("posted_to_bluesky.csv", "w") as posted_blueskyf:
                 bluesky_writer = csv.writer(posted_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 bluesky_writer.writerow(list(earthquakes[0].keys()))
+        else:
+            print("Already present. We'll read it...")
+
         # Read and load posted bluesky posts
+        print("Reading previouslty posted data from bluesky...")
         posted_bluesky = csv.DictReader(open("posted_to_bluesky.csv"))
         posted_bluesky = [d for d in posted_bluesky]
+
         # check if empty. Create new csv file True
+        print("Opening bluesky csv file in preparation for adding new lines...")
         with open("posted_to_bluesky.csv", "a") as posted_blueskyf:
             bluesky_writer = csv.writer(posted_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for earthquake in earthquakes:
+
                 lines = ""
                 if is_within_timeframe(earthquake["time"], TIMEFRAME):
+                    print("We got data for posting...")
+
                     # Check if already posted on Bluesky
-                    if list(filter(lambda e: e["time"] == earthquake["time"], posted_bluesky)):
+                    if not list(filter(lambda e: e["time"] == earthquake["time"], posted_bluesky)):
                         # Make readable
                         date_utc = arrow.get(earthquake["time"])
                         date_local = date_utc.humanize()
@@ -97,18 +113,26 @@ if __name__ == "__main__":
                         lines += f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
                         lines += f"Map: https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}\n"
                         print(lines)
+
                         # save
+                        print("Writing to bluesky csv...")
                         bluesky_writer.writerow(earthquake.values())
+
                         # Post to Bluesky
                         if not bluesky_logged_in and not DEBUG:
                             # Init bluesky client
+                            print("Logging on to bluesky...")
                             client = Client()
                             client.login(BSKYUSER, BSKYPASS)
                             bluesky_logged_in = True
+
                         if not DEBUG:
+                            print("Posting to bluesky...")
                             post = client.send_post(text=lines)
                             print(f"CID: {post.cid} URI: {post.uri}")
+                    else:
+                        print(f"SKIP POST: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
                 else:
-                    print(f"SKIP: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
+                    print(f"SKIP MAG: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
     else:
         print(f"No earthquakes with magnitude {MAG}")
