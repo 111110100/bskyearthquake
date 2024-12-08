@@ -110,3 +110,5 @@ if __name__ == "__main__":
                             print(f"CID: {post.cid} URI: {post.uri}")
                 else:
                     print(f"SKIP: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
+    else:
+        print(f"No earthquakes with magnitude {MAG}")
