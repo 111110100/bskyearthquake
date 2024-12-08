@@ -1,4 +1,4 @@
-from atproto import Client, TextBuilder
+from atproto import Client, client_utils
 from dotenv import load_dotenv
 from fake_useragent import UserAgent
 import arrow
@@ -111,7 +111,7 @@ if __name__ == "__main__":
                         date_utc = arrow.get(earthquake["time"])
                         date_local = date_utc.humanize()
                         date_utc = date_utc.format("MMMM DD, YYYY HH:MM")
-                        bluesky_line = f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}"
+                        bluesky_line = f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
                         bluesky_link = f"https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}"
                         print(bluesky_line)
                         print(bluesky_link)
@@ -130,9 +130,9 @@ if __name__ == "__main__":
 
                         if not DEBUG:
                             print("Posting to bluesky...")
-                            tb = TextBuilder()
+                            tb = client_utils.TextBuilder()
                             tb.text(bluesky_line)
-                            tb.link("View map", bluesky_link)
+                            tb.link(bluesky_link, bluesky_link)
                             post = client.send_post(tb)
                             print(f"CID: {post.cid} URI: {post.uri}")
                     else:
