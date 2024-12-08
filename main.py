@@ -34,7 +34,7 @@ def check_earthquakes(magnitude: int = 5):
     return values if values else False
 
 
-def is_within_timeframe(date_str, seconds: int = 60):
+def is_within_timeframe(date_str: str, seconds: int = 60):
     """
     :param date_str: A string representing the date in ISO 8601 format (e.g., "2024-11-24T07:58:36.396Z").
     :param seconds: The number of seconds to compare the date against.
@@ -73,9 +73,7 @@ if __name__ == "__main__":
        raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
     earthquakes = check_earthquakes(MAG)
     if earthquakes:
-        # Init bluesky client
-        client = Client()
-        client.login(BSKYUSER, BSKYPASS)
+        bluesky_logged_in = False
         # Check for existing posted_to_bluesky file
         if not os.path.isfile("posted_to_bluesky.csv"):
             with open("posted_to_bluesky.csv", "w") as posted_blueskyf:
@@ -102,6 +100,11 @@ if __name__ == "__main__":
                         # save
                         bluesky_writer.writerow(earthquake.values())
                         # Post to Bluesky
+                        if not bluesky_logged_in and not DEBUG:
+                            # Init bluesky client
+                            client = Client()
+                            client.login(BSKYUSER, BSKYPASS)
+                            bluesky_logged_in = True
                         if not DEBUG:
                             post = client.send_post(text=lines)
                             print(f"CID: {post.cid} URI: {post.uri}")
