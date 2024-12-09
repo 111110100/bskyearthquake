@@ -28,7 +28,7 @@ def check_earthquakes(magnitude: int = 5):
         usgs_csv = csv.DictReader(usgs.text.splitlines())
 
         # Filter only earthquake data that has a magnitude greater than 'magnitude'
-        values = [l for l in usgs_csv if l["type"] == "earthquake" and float(l["mag"]) > magnitude]
+        values = [l for l in usgs_csv if l["type"] == "earthquake" and is_within_timeframe(l["time"], TIMEFRAME) and float(l["mag"]) > magnitude]
 
     # Return result
     return values if values else False
@@ -75,6 +75,7 @@ if __name__ == "__main__":
     if not BSKYUSER or not BSKYPASS:
        raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
 
+    # Check if we have earthquakes within the timeframe that has a magnitude >= MAG
     print("Fetching earthquake information from USGS...")
     earthquakes = check_earthquakes(MAG)
     if earthquakes:
@@ -103,42 +104,39 @@ if __name__ == "__main__":
 
                 bluesky_line = ""
                 bluesky_link = ""
-                if is_within_timeframe(earthquake["time"], TIMEFRAME):
-                    print("We got data for posting...")
+                print("We got data for posting...")
 
-                    # Check if already posted on Bluesky
-                    if not list(filter(lambda e: e["time"] == earthquake["time"], posted_bluesky)):
-                        # Make readable
-                        date_utc = arrow.get(earthquake["time"])
-                        date_local = date_utc.humanize()
-                        date_utc = date_utc.format("MMMM DD, YYYY HH:MM")
-                        bluesky_line = f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
-                        bluesky_link = f"https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}"
-                        print(bluesky_line)
-                        print(bluesky_link)
+                # Check if already posted on Bluesky
+                if not list(filter(lambda e: e["time"] == earthquake["time"], posted_bluesky)):
+                    # Make readable
+                    date_utc = arrow.get(earthquake["time"])
+                    date_local = date_utc.humanize()
+                    date_utc = date_utc.format("MMMM DD, YYYY HH:MM")
+                    bluesky_line = f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
+                    bluesky_link = f"https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}"
+                    print(bluesky_line)
+                    print(bluesky_link)
 
-                        # save
-                        print("Writing to bluesky csv...")
-                        bluesky_writer.writerow(earthquake.values())
+                    # save
+                    print("Writing to bluesky csv...")
+                    bluesky_writer.writerow(earthquake.values())
 
-                        # Post to Bluesky
-                        if not bluesky_logged_in and not DEBUG:
-                            # Init bluesky client
-                            print("Logging on to bluesky...")
-                            client = Client()
-                            client.login(BSKYUSER, BSKYPASS)
-                            bluesky_logged_in = True
+                    # Post to Bluesky
+                    if not bluesky_logged_in and not DEBUG:
+                        # Init bluesky client
+                        print("Logging on to bluesky...")
+                        client = Client()
+                        client.login(BSKYUSER, BSKYPASS)
+                        bluesky_logged_in = True
 
-                        if not DEBUG:
-                            print("Posting to bluesky...")
-                            tb = client_utils.TextBuilder()
-                            tb.text(bluesky_line)
-                            tb.link(bluesky_link, bluesky_link)
-                            post = client.send_post(tb)
-                            print(f"CID: {post.cid} URI: {post.uri}")
-                    else: # if not list(filter())...
+                    if not DEBUG:
+                        print("Posting to bluesky...")
+                        tb = client_utils.TextBuilder()
+                        tb.text(bluesky_line)
+                        tb.link(bluesky_link, bluesky_link)
+                        post = client.send_post(tb)
+                        print(f"CID: {post.cid} URI: {post.uri}")
+                else: # if not list(filter())...
                         print(f"SKIP POST: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
-                else: # if is_within_timeframe()
-                    print(f"SKIP TIME: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
     else: # if earthquake
-        print(f"No earthquakes with magnitude {MAG}")
+        print(f"No earthquakes with magnitude {MAG} within {TIMEFRAME} seconds")
