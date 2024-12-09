@@ -64,6 +64,7 @@ if __name__ == "__main__":
     BSKYPASS: str = os.getenv("BSKYPASS", "")
     DEBUG: bool = os.getenv("DEBUG", "F")[0] in ["T", "t"]
     TIMEFRAME: int = int(os.getenv("TIMEFRAME", 60))
+    WORKDIR: str = os.getenv("WORKDIR", "/opt/bskyearthquake/")
 
     if DEBUG:
         print(f"MAG: {MAG}")
@@ -82,8 +83,8 @@ if __name__ == "__main__":
 
         # Check for existing posted_to_bluesky file
         print("Checking for previously saved data posted on bluesky...")
-        if not os.path.isfile("posted_to_bluesky.csv"):
-            with open("posted_to_bluesky.csv", "w") as posted_blueskyf:
+        if not os.path.isfile(f"{WORKDIR}posted_to_bluesky.csv"):
+            with open(f"{WORKDIR}posted_to_bluesky.csv", "w") as posted_blueskyf:
                 bluesky_writer = csv.writer(posted_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 bluesky_writer.writerow(list(earthquakes[0].keys()))
         else:
@@ -91,12 +92,12 @@ if __name__ == "__main__":
 
         # Read and load posted bluesky posts
         print("Reading previouslty posted data from bluesky...")
-        posted_bluesky = csv.DictReader(open("posted_to_bluesky.csv"))
+        posted_bluesky = csv.DictReader(open(f"{WORKDIR}posted_to_bluesky.csv"))
         posted_bluesky = [d for d in posted_bluesky]
 
         # check if empty. Create new csv file True
         print("Opening bluesky csv file in preparation for adding new lines...")
-        with open("posted_to_bluesky.csv", "a") as posted_blueskyf:
+        with open(f"{WORKDIR}posted_to_bluesky.csv", "a") as posted_blueskyf:
             bluesky_writer = csv.writer(posted_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for earthquake in earthquakes:
 
