@@ -136,9 +136,9 @@ if __name__ == "__main__":
                             tb.link(bluesky_link, bluesky_link)
                             post = client.send_post(tb)
                             print(f"CID: {post.cid} URI: {post.uri}")
-                    else:
+                    else: # if not list(filter())...
                         print(f"SKIP POST: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
-                else:
+                else: # if is_within_timeframe()
                     print(f"SKIP TIME: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
-    else:
+    else: # if earthquake
         print(f"No earthquakes with magnitude {MAG}")
