@@ -71,6 +71,7 @@ if __name__ == "__main__":
         print(f"BSKYUSER: {BSKYUSER}")
         print(f"BSKYPASS: {BSKYPASS}")
         print(f"TIMEFRAME: {TIMEFRAME}")
+        print(f"WORKDIR: {WORKDIR}")
 
     if not BSKYUSER or not BSKYPASS:
        raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
