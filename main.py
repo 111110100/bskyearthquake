@@ -94,7 +94,7 @@ if __name__ == "__main__":
         # Read and load posted bluesky posts
         print("Reading previouslty posted data from bluesky...")
         posted_bluesky = csv.DictReader(open(f"{WORKDIR}posted_to_bluesky.csv"))
-        posted_bluesky = [d for d in posted_bluesky]
+        posted_bluesky = [d for d in posted_bluesky] # Convert to list
 
         # check if empty. Create new csv file True
         print("Opening bluesky csv file in preparation for adding new lines...")
@@ -119,7 +119,8 @@ if __name__ == "__main__":
 
                     # save
                     print("Writing to bluesky csv...")
-                    bluesky_writer.writerow(earthquake.values())
+                    if not DEBUG:
+                        bluesky_writer.writerow(earthquake.values())
 
                     # Post to Bluesky
                     if not bluesky_logged_in and not DEBUG:
