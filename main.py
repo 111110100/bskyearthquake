@@ -114,7 +114,7 @@ if __name__ == "__main__":
                     date_local = date_utc.humanize()
                     date_utc = date_utc.format("MMMM DD, YYYY HH:MM")
                     bluesky_line = f"Magnitude {earthquake['mag']} {earthquake['place']} on {date_utc}\n"
-                    bluesky_link = f"https://maps.google.com/?q={earthquake['latitude']},{earthquake['longitude']}"
+                    bluesky_link = f"https://www.google.com/maps/place/{earthquake['latitude']},{earthquake['longitude']}/@{earthquake['latitude']},{earthquake['longitude']},10z"
                     print(bluesky_line)
                     print(bluesky_link)
 
