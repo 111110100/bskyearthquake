@@ -142,4 +142,4 @@ if __name__ == "__main__":
                 else: # if not list(filter())...
                         print(f"SKIP POSTED: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
     else: # if earthquake
-        print(f"No earthquakes with magnitude {MAG} within {TIMEFRAME} seconds")
+        print(f"No earthquakes with magnitude {MAG} within {TIMEFRAME} seconds.")
