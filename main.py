@@ -80,7 +80,7 @@ if __name__ == "__main__":
     print("Fetching earthquake information from USGS...")
     earthquakes = check_earthquakes(MAG)
     if earthquakes:
-        print("We got earthquakes...")
+        print("We got earthquakes.")
         bluesky_logged_in = False
 
         # Check for existing posted_to_bluesky file
@@ -90,7 +90,7 @@ if __name__ == "__main__":
                 bluesky_writer = csv.writer(posted_to_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 bluesky_writer.writerow(list(earthquakes[0].keys()))
         else:
-            print("Already present. We'll read it...")
+            print("Already present. We'll read it.")
 
         # Read and load posted bluesky posts
         print("Reading previouslty posted data from bluesky...")
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
                 bluesky_line = ""
                 bluesky_link = ""
-                print("We got data for posting...")
+                print("We got data for posting.")
 
                 # Check if already posted on bluesky
                 if not list(filter(lambda e: e["time"] == earthquake["time"], posted_to_bluesky)):
@@ -138,7 +138,7 @@ if __name__ == "__main__":
                         post = client.send_post(tb)
                         print(f"CID: {post.cid} URI: {post.uri}")
                     else:
-                        print(f"DEBUG Enabled. Not posting...")
+                        print(f"DEBUG Enabled. Not posting.")
                 else: # if not list(filter())...
                         print(f"SKIP POSTED: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
     else: # if earthquake
