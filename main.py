@@ -86,29 +86,29 @@ if __name__ == "__main__":
         # Check for existing posted_to_bluesky file
         print("Checking for previously saved data posted on bluesky...")
         if not os.path.isfile(f"{WORKDIR}posted_to_bluesky.csv"):
-            with open(f"{WORKDIR}posted_to_bluesky.csv", "w") as posted_blueskyf:
-                bluesky_writer = csv.writer(posted_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            with open(f"{WORKDIR}posted_to_bluesky.csv", "w") as posted_to_blueskyf:
+                bluesky_writer = csv.writer(posted_to_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 bluesky_writer.writerow(list(earthquakes[0].keys()))
         else:
             print("Already present. We'll read it...")
 
         # Read and load posted bluesky posts
         print("Reading previouslty posted data from bluesky...")
-        posted_bluesky = csv.DictReader(open(f"{WORKDIR}posted_to_bluesky.csv"))
-        posted_bluesky = [d for d in posted_bluesky] # Convert to list
+        posted_to_bluesky = csv.DictReader(open(f"{WORKDIR}posted_to_bluesky.csv"))
+        posted_to_bluesky = [d for d in posted_to_bluesky] # Convert to list
 
-        # check if empty. Create new csv file True
+        # Check if empty. Create new csv file True
         print("Opening bluesky csv file in preparation for adding new lines...")
-        with open(f"{WORKDIR}posted_to_bluesky.csv", "a") as posted_blueskyf:
-            bluesky_writer = csv.writer(posted_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        with open(f"{WORKDIR}posted_to_bluesky.csv", "a") as posted_to_blueskyf:
+            bluesky_writer = csv.writer(posted_to_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for earthquake in earthquakes:
 
                 bluesky_line = ""
                 bluesky_link = ""
                 print("We got data for posting...")
 
-                # Check if already posted on Bluesky
-                if not list(filter(lambda e: e["time"] == earthquake["time"], posted_bluesky)):
+                # Check if already posted on bluesky
+                if not list(filter(lambda e: e["time"] == earthquake["time"], posted_to_bluesky)):
                     # Make readable
                     date_utc = arrow.get(earthquake["time"])
                     date_local = date_utc.humanize()
@@ -118,27 +118,28 @@ if __name__ == "__main__":
                     print(bluesky_line)
                     print(bluesky_link)
 
-                    # save
-                    print("Writing to bluesky csv...")
                     if not DEBUG:
+                        if not bluesky_logged_in: # Login to bluesky
+                            # Init bluesky client
+                            print("Logging on to bluesky...")
+                            client = Client()
+                            client.login(BSKYUSER, BSKYPASS)
+                            bluesky_logged_in = True
+
+                        # Save CSV
+                        print("Writing to bluesky csv...")
                         bluesky_writer.writerow(earthquake.values())
 
-                    # Post to Bluesky
-                    if not bluesky_logged_in and not DEBUG:
-                        # Init bluesky client
-                        print("Logging on to bluesky...")
-                        client = Client()
-                        client.login(BSKYUSER, BSKYPASS)
-                        bluesky_logged_in = True
-
-                    if not DEBUG:
+                        # Post to bluesky
                         print("Posting to bluesky...")
                         tb = client_utils.TextBuilder()
                         tb.text(bluesky_line)
                         tb.link(bluesky_link, bluesky_link)
                         post = client.send_post(tb)
                         print(f"CID: {post.cid} URI: {post.uri}")
+                    else:
+                        print(f"DEBUG Enabled. Not posting...")
                 else: # if not list(filter())...
-                        print(f"SKIP POST: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
+                        print(f"SKIP POSTED: {earthquake['time']} Magnitude {earthquake['mag']} {earthquake['place']}")
     else: # if earthquake
         print(f"No earthquakes with magnitude {MAG} within {TIMEFRAME} seconds")
