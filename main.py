@@ -28,10 +28,10 @@ def check_earthquakes(magnitude: int = 5):
         usgs_csv = csv.DictReader(usgs.text.splitlines())
 
         # Filter only earthquake data that has a magnitude greater than 'magnitude'
-        values = [l for l in usgs_csv if l["type"] == "earthquake" and is_within_timeframe(l["time"], TIMEFRAME) and float(l["mag"]) > magnitude]
+        earthquakes = [l for l in usgs_csv if l["type"] == "earthquake" and is_within_timeframe(l["time"], TIMEFRAME) and float(l["mag"]) > magnitude]
 
     # Return result
-    return values if values else False
+    return earthquakes if earthquakes else False
 
 
 def is_within_timeframe(date_str: str, seconds: int = 60):
@@ -58,6 +58,7 @@ def is_within_timeframe(date_str: str, seconds: int = 60):
 
 
 if __name__ == "__main__":
+    # Load environment variables
     load_dotenv()
     MAG: float = float(os.getenv("MAG", 4))
     BSKYUSER: str = os.getenv("BSKYUSER", "")
@@ -97,7 +98,7 @@ if __name__ == "__main__":
         posted_to_bluesky = csv.DictReader(open(f"{WORKDIR}posted_to_bluesky.csv"))
         posted_to_bluesky = [d for d in posted_to_bluesky] # Convert to list
 
-        # Check if empty. Create new csv file True
+        # Prep CSV file for adding new earthquake info if needed
         print("Opening bluesky csv file in preparation for adding new lines...")
         with open(f"{WORKDIR}posted_to_bluesky.csv", "a") as posted_to_blueskyf:
             bluesky_writer = csv.writer(posted_to_blueskyf, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -126,7 +127,7 @@ if __name__ == "__main__":
                             client.login(BSKYUSER, BSKYPASS)
                             bluesky_logged_in = True
 
-                        # Save CSV
+                        # Save to CSV
                         print("Writing to bluesky csv...")
                         bluesky_writer.writerow(earthquake.values())
 
