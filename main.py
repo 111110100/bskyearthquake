@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print(f"WORKDIR: {WORKDIR}")
 
     if not BSKYUSER or not BSKYPASS:
-       raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
+        raise ValueError("Environment variable BSKYUSER and/or BSKYPASS cannot be empty")
 
     # Check if we have earthquakes within the timeframe that has a magnitude >= MAG
     print("Fetching earthquake information from USGS...")
