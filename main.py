@@ -28,7 +28,11 @@ def check_earthquakes(magnitude: int = 5):
         usgs_csv = csv.DictReader(usgs.text.splitlines())
 
         # Filter only earthquake data that has a magnitude greater than 'magnitude'
-        earthquakes = [l for l in usgs_csv if l["type"] == "earthquake" and is_within_timeframe(l["time"], TIMEFRAME) and float(l["mag"]) > magnitude]
+        earthquakes = [
+            l
+            for l in usgs_csv
+            if l["type"] == "earthquake" and is_within_timeframe(l["time"], TIMEFRAME) and float(l["mag"]) > magnitude
+        ]
 
     # Return result
     return earthquakes if earthquakes else False
@@ -96,7 +100,10 @@ if __name__ == "__main__":
         # Read and load posted bluesky posts
         print("Reading previouslty posted data from bluesky...")
         posted_to_bluesky = csv.DictReader(open(f"{WORKDIR}posted_to_bluesky.csv"))
-        posted_to_bluesky = [d for d in posted_to_bluesky] # Convert to list
+        posted_to_bluesky = [
+            d
+            for d in posted_to_bluesky
+        ] # Convert to list
 
         # Prep CSV file for adding new earthquake info if needed
         print("Opening bluesky csv file in preparation for adding new lines...")
