@@ -47,13 +47,13 @@ def is_within_timeframe(date_str: str, seconds: int = 60):
     try:
         # Parse the input date string using arrow
         input_date = arrow.get(date_str).to("utc")
-        
+
         # Get the current UTC date and time using arrow
         current_date = arrow.utcnow()
-        
+
         # Calculate the difference in seconds
         time_difference = abs((current_date - input_date).total_seconds())
-        
+
         # Check if the difference is within the specified seconds
         return time_difference <= seconds
     except arrow.parser.ParserError as e:
